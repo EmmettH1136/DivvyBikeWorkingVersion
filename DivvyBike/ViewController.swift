@@ -41,6 +41,8 @@ class ViewController: UIViewController, UITableViewDataSource, MKMapViewDelegate
     
     let span = MKCoordinateSpan(latitudeDelta: 0.30, longitudeDelta: 0.30)
     
+    var sendie : Divvy? = nil
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         tableView.dataSource = self
@@ -107,14 +109,28 @@ class ViewController: UIViewController, UITableViewDataSource, MKMapViewDelegate
     func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView? {
         
         let pin = MKPinAnnotationView(annotation: annotation, reuseIdentifier: nil)
-        
+        let button = UIButton(type: .detailDisclosure)
+        pin.rightCalloutAccessoryView = button
         pin.canShowCallout = true
         return pin
         
     }
+    func mapView(_ mapView: MKMapView, annotationView view: MKAnnotationView, calloutAccessoryControlTapped control: UIControl) {
+        if let title = view.annotation?.title, let name = title {
+            for x in divvy {
+                if name == x.station_name {
+                    sendie = x
+                }
+            }
+            performSegue(withIdentifier: "bingo", sender: nil)
+        }
+    }
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if let nvc = segue.destination as? NewViewController {
-            if let indexPath = tableView.indexPathForSelectedRow {
+            if sendie != nil {
+                nvc.divvySent = sendie!
+                sendie = nil
+            } else if let indexPath = tableView.indexPathForSelectedRow {
                 let div = divvy[indexPath.row]
                 nvc.divvySent = div
             }
